@@ -1,34 +1,9 @@
-spring:
-  application:
-    name: pms-service
-  cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:8848
-    sentinel:
-      transport:
-        dashboard: localhsot:8080
-        port: 8719
-
-  datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/guli_pms?useUnicode=true&characterEncoding=UTF-8&useSSL=false
-    username: root
-    password: root
-  zipkin:
-    base-url: httP://localhost:9411
-    discovery-client-enabled: false
-    sender:
-      type: web
-  sleuth:
-    sampler:
-      probability: 1
 mybatis-plus:
-  mapper-locations: classpath:mapper/pms/*.xml  # 读取映射文件
+  mapper-locations: classpath:mapper/pms/*.xml
   type-aliases-package: com.atguigu.gmall.pms.entity
   global-config:
     db-config:
-      id-type: auto  # 默认使用数据库自增
+      id-type: auto
 feign:
   sentinel:
     enabled: true
