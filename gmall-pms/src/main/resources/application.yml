@@ -9,3 +9,6 @@ feign:
     enabled: true
 server:
   port: 18081
+logging:
+  level:
+    com.atguigu.gmall: debug
