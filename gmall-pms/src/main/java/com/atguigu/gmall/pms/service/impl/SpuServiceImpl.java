@@ -4,13 +4,12 @@ import com.atguigu.gmall.pms.entity.*;
 import com.atguigu.gmall.pms.feign.GmallSmsClient;
 import com.atguigu.gmall.pms.mapper.SkuMapper;
 import com.atguigu.gmall.pms.mapper.SpuDescMapper;
-import com.atguigu.gmall.pms.service.SkuAttrValueService;
-import com.atguigu.gmall.pms.service.SkuImagesService;
-import com.atguigu.gmall.pms.service.SpuAttrValueService;
+import com.atguigu.gmall.pms.service.*;
 import com.atguigu.gmall.pms.vo.SkuVo;
 import com.atguigu.gmall.pms.vo.SpuAttrValueVo;
 import com.atguigu.gmall.pms.vo.SpuVo;
 import com.atguigu.gmall.sms.vo.SkuSaleVo;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,7 @@ import com.atguigu.gmall.common.bean.PageResultVo;
 import com.atguigu.gmall.common.bean.PageParamVo;
 
 import com.atguigu.gmall.pms.mapper.SpuMapper;
-import com.atguigu.gmall.pms.service.SpuService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
@@ -45,6 +44,8 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
     private SkuAttrValueService skuAttrValueService;
     @Autowired
     private GmallSmsClient gmallSmsClient;
+    @Autowired
+    private SpuDescService spuDescService;
 
     @Override
     public PageResultVo queryPage(PageParamVo paramVo) {
@@ -79,13 +80,16 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
     }
 
     @Override
+//    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional
     public void bigSave(SpuVo spuVo) {
         // 1. 保存spu
         // 1.1 保存spu基本信息spu_info
         Long spuId = saveSpu(spuVo);
 
         // 1.2 保存spu描述信息spu_info_desc
-        saveSpuDesc(spuVo, spuId);
+//        saveSpuDesc(spuVo, spuId);
+        this.spuDescService.saveSpuDesc(spuVo, spuId);
 
         // 1.3 保存spu规格参数信息：
         // baseAttrs: [{attrId: 1, attrName: "上市年份", valueSelected: ["2020"]},…]
@@ -95,7 +99,52 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
         // skus: [{attr_3: "白色", name_3: "机身颜色", price: "5999", stock: 0, growBounds: "122",
         //       buyBounds: "222",…},"saleAttrs": [{"attrId": "3","attrValue": "黑色"]...}]
         saveSku(spuVo, spuId);
+//        int i = 1/0;
+    }
 
+    /**
+     * 保存spu基本信息spu_info
+     * @param spuVo
+     * @return
+     */
+    public Long saveSpu(SpuVo spuVo) {
+        spuVo.setPublishStatus(1);
+        spuVo.setCreateTime(new Date());
+        spuVo.setUpdateTime(spuVo.getCreateTime());
+        this.save(spuVo);
+        return spuVo.getId();
+    }
+
+    /**
+     * 保存spu描述信息spu_info_desc
+     * @param spuVo
+     * @param spuId
+     */
+    public void saveSpuDesc(SpuVo spuVo, Long spuId) {
+        if (!CollectionUtils.isEmpty(spuVo.getSpuImages())) {
+            SpuDescEntity spuDescEntity = new SpuDescEntity();
+            spuDescEntity.setSpuId(spuId);
+            spuDescEntity.setDecript(StringUtils.join(spuVo.getSpuImages(),","));
+            this.spuDescMapper.insert(spuDescEntity);
+        }
+    }
+
+    /**
+     * 保存spu规格参数信息
+     * @param spuVo
+     * @param spuId
+     */
+    public void saveSpuBaseAttr(SpuVo spuVo, Long spuId) {
+        List<SpuAttrValueVo> baseAttrs = spuVo.getBaseAttrs();
+        if(!CollectionUtils.isEmpty(baseAttrs)){
+            this.spuAttrValueService.saveBatch(baseAttrs.stream().map(spuAttrValueVo -> {
+                SpuAttrValueEntity spuAttrValueEntity = new SpuAttrValueEntity();
+                BeanUtils.copyProperties(spuAttrValueVo,spuAttrValueEntity);
+                spuAttrValueEntity.setSpuId(spuId);
+                spuAttrValueEntity.setSort(0);
+                return spuAttrValueEntity;
+            }).collect(Collectors.toList()));
+        }
     }
 
     /**
@@ -158,47 +207,6 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
         });
     }
 
-    /**
-     * 保存spu规格参数信息
-     * @param spuVo
-     * @param spuId
-     */
-    public void saveSpuBaseAttr(SpuVo spuVo, Long spuId) {
-        List<SpuAttrValueVo> baseAttrs = spuVo.getBaseAttrs();
-        if(!CollectionUtils.isEmpty(baseAttrs)){
-            this.spuAttrValueService.saveBatch(baseAttrs.stream().map(spuAttrValueVo -> {
-                SpuAttrValueEntity spuAttrValueEntity = new SpuAttrValueEntity();
-                BeanUtils.copyProperties(spuAttrValueVo,spuAttrValueEntity);
-                spuAttrValueEntity.setSpuId(spuId);
-                spuAttrValueEntity.setSort(0);
-                return spuAttrValueEntity;
-            }).collect(Collectors.toList()));
-        }
-    }
 
-    /**
-     * 保存spu描述信息spu_info_desc
-     * @param spuVo
-     * @param spuId
-     */
-    public void saveSpuDesc(SpuVo spuVo, Long spuId) {
-        SpuDescEntity spuDescEntity = new SpuDescEntity();
-        spuDescEntity.setSpuId(spuId);
-        spuDescEntity.setDecript(StringUtils.join(spuVo.getSpuImages(),","));
-        this.spuDescMapper.insert(spuDescEntity);
-    }
-
-    /**
-     * 保存spu基本信息spu_info
-     * @param spuVo
-     * @return
-     */
-    public Long saveSpu(SpuVo spuVo) {
-        spuVo.setPublishStatus(1);
-        spuVo.setCreateTime(new Date());
-        spuVo.setUpdateTime(spuVo.getCreateTime());
-        this.save(spuVo);
-        return spuVo.getId();
-    }
 
 }
