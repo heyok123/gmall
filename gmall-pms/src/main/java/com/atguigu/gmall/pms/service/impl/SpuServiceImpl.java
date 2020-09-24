@@ -81,7 +81,7 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
 
     @Override
 //    @Transactional(rollbackFor = Exception.class)
-    @GlobalTransactional
+    @GlobalTransactional // 分布式事务
     public void bigSave(SpuVo spuVo) {
         // 1. 保存spu
         // 1.1 保存spu基本信息spu_info
