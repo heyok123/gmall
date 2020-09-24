@@ -36,6 +36,9 @@ public class SkuBoundsController {
     @Autowired
     private SkuBoundsService skuBoundsService;
 
+    /**
+     *新增sku的营销信息 pms调用
+     */
     @ApiOperation(value = "新增sku的营销信息")
     @PostMapping("skusale/save")
     public ResponseVo saveSkuSaleInfo(@RequestBody SkuSaleVo skuSaleVo){
