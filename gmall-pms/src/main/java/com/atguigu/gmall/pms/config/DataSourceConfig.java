@@ -19,12 +19,6 @@ import javax.sql.DataSource;
 @Configuration
 public class DataSourceConfig {
 
-   /* @Bean
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DruidDataSource druidDataSource() {
-        return new DruidDataSource();
-    }*/
-
     /**
      * 需要将 DataSourceProxy 设置为主数据源，否则事务无法回滚
      * @return The default datasource
@@ -43,4 +37,10 @@ public class DataSourceConfig {
         hikariDataSource.setPassword(password);
         return new DataSourceProxy(hikariDataSource);
     }
+
+       /* @Bean
+    @ConfigurationProperties(prefix = "spring.datasource")
+    public DruidDataSource druidDataSource() {
+        return new DruidDataSource();
+    }*/
 }

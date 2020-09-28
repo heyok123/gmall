@@ -36,6 +36,18 @@ public class SpuController {
     private SpuService spuService;
 
     /**
+     * 分页查询已上架SPU
+     */
+    @ApiOperation(value = "分页查询已上架SPU")
+    @PostMapping("page")
+    public ResponseVo<List<SpuEntity>> querSpuByCidPage(@RequestBody PageParamVo pageParamVo){
+        PageResultVo resultVo = this.spuService.queryPage(pageParamVo);
+        List<SpuEntity> list = (List<SpuEntity>) resultVo.getList();
+
+        return ResponseVo.ok(list);
+    }
+
+    /**
      * 按照分类id分页查询商品列表
      */
     @ApiOperation(value = "spu商品信息查询")
