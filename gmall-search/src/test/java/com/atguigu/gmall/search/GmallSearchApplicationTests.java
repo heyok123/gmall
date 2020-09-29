@@ -43,7 +43,7 @@ class GmallSearchApplicationTests {
         elasticsearchRestTemplate.putMapping(Goods.class);
     }
 
-    @Test
+   /* @Test
     void importData(){
         Integer pageNum = 1;
         Integer pageSize = 100;
@@ -105,7 +105,7 @@ class GmallSearchApplicationTests {
 
 
     }
-
+*/
     @Test
     void contextData(){
 

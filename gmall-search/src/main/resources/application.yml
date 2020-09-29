@@ -20,6 +20,8 @@ spring:
   elasticsearch:
     rest:
       uris: http://192.168.140.222:9200
+  jackson:
+    default-property-inclusion: non_null
 feign:
   sentinel:
     enabled: true
