@@ -7,6 +7,11 @@ mybatis-plus:
 feign:
   sentinel:
     enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 20000
+        readTimeout: 20000
 server:
   port: 18081
 logging:
@@ -17,3 +22,10 @@ spring:
     alibaba:
       seata:
         tx-service-group: gmall_tx_group
+  rabbitmq:
+    host: 192.168.140.223
+    virtual-host: /zws
+    username: zws
+    password: zws
+    publisher-confirm-type: correlated
+    publisher-returns: true

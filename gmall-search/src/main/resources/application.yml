@@ -22,6 +22,18 @@ spring:
       uris: http://192.168.140.222:9200
   jackson:
     default-property-inclusion: non_null
+  thymeleaf:
+    cache: false
+  rabbitmq:
+    host: 192.168.140.223
+    virtual-host: /zws
+    username: zws
+    password: zws
+    listener:
+      simple:
+        prefetch: 1
+        acknowledge-mode: manual
+        concurrency: 3
 feign:
   sentinel:
     enabled: true

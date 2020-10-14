@@ -254,22 +254,24 @@ public class SearchServiceImpl implements SearchService {
 
         // 2. 构建排序条件：1-价格升序 2-价格降序 3-新品降序 4-销量降序
         Integer sort = paramVo.getSort();
-        switch (sort) {
-            case 1:
-                sourceBuilder.sort("price", SortOrder.ASC);
-                break;
-            case 2:
-                sourceBuilder.sort("price", SortOrder.DESC);
-                break;
-            case 3:
-                sourceBuilder.sort("createTime", SortOrder.DESC);
-                break;
-            case 4:
-                sourceBuilder.sort("sales", SortOrder.DESC);
-                break;
-            default:
-                sourceBuilder.sort("_score", SortOrder.DESC);
-                break;
+        if (sort != null){
+            switch (sort) {
+                case 1:
+                    sourceBuilder.sort("price", SortOrder.ASC);
+                    break;
+                case 2:
+                    sourceBuilder.sort("price", SortOrder.DESC);
+                    break;
+                case 3:
+                    sourceBuilder.sort("createTime", SortOrder.DESC);
+                    break;
+                case 4:
+                    sourceBuilder.sort("sales", SortOrder.DESC);
+                    break;
+                default:
+                    sourceBuilder.sort("_score", SortOrder.DESC);
+                    break;
+            }
         }
 
         // 3. 构建分页条件
@@ -316,133 +318,5 @@ public class SearchServiceImpl implements SearchService {
     }
 
 
-// 有bug
 
-//    private SearchSourceBuilder buildSearchSourceBuilder(SearchParamVo searchParamVo){
-//
-//        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-//
-//        String keyword = searchParamVo.getKeyword();
-//
-//        if (StringUtils.isBlank(keyword)){
-//            return sourceBuilder;
-//        }
-//
-//        // 1. 构建搜索条件
-//        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-//        sourceBuilder.query(boolQueryBuilder);
-//
-//        // 1.1. 构建匹配查询
-//        boolQueryBuilder.must(QueryBuilders.matchQuery("title", keyword).operator(Operator.AND));
-//
-//        // 1.2. 构建过滤条件
-//        // 1.2.1. 品牌过滤
-//        List<Long> brandId = searchParamVo.getBrandId();
-//        if (!CollectionUtils.isEmpty(brandId)) {
-//            boolQueryBuilder.filter(QueryBuilders.termsQuery("brandId", brandId));
-//        }
-//
-//        // 1.2.2. 分类过滤
-//        List<Long> cid3 = searchParamVo.getCid3();
-//        if (!CollectionUtils.isEmpty(cid3)) {
-//            boolQueryBuilder.filter(QueryBuilders.termsQuery("categoryId", cid3));
-//        }
-//
-//        // 1.2.3. 价格区间过滤
-//        Double priceFrom = searchParamVo.getPriceFrom();
-//        Double priceTo = searchParamVo.getPriceTo();
-//        // 价格判断
-//        if (priceFrom != null || priceTo != null){
-//            RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery("price");
-//            if (priceFrom != null){
-//                rangeQueryBuilder.gte(priceFrom);
-//            }
-//            if (priceTo != null){
-//                rangeQueryBuilder.lte(priceTo);
-//            }
-//            boolQueryBuilder.filter(rangeQueryBuilder);
-//        }
-//
-//        // 1.2.4. 库存过滤
-//        Boolean store = searchParamVo.getStore();
-//        if (store != null){
-//            boolQueryBuilder.filter(QueryBuilders.termQuery("store",store));
-//        }
-//
-//        // 1.2.5. 规格参数的嵌套过滤: ["4:8G-12G", "5:128G-256G-521G"]
-//        List<String> props = searchParamVo.getProps();
-//        if (!CollectionUtils.isEmpty(props)) {
-//            props.forEach(prop -> {
-//                BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-//                String[] attr = StringUtils.split(prop, ":");
-//                if (attr != null && attr.length == 2){
-//                    queryBuilder.must(QueryBuilders.termQuery("searchAttrs.attrId", attr[0]));
-//
-//                    String[] attrValues = StringUtils.split(attr[1], "-");
-//                    queryBuilder.must(QueryBuilders.termsQuery("searchAttrs.attrValue", attrValues));
-//                    boolQueryBuilder.filter(QueryBuilders.nestedQuery("searchAttrs", queryBuilder, ScoreMode.None));
-//                }
-//            });
-//        }
-//
-//
-//        // 2. 构建排序条件：1-价格升序 2-价格降序 3-新品降序 4-销量降序
-//        Integer sort = searchParamVo.getSort();
-//        switch (sort){
-//            case 1:
-//                sourceBuilder.sort("price", SortOrder.ASC);
-//                break;
-//            case 2:
-//                sourceBuilder.sort("price",SortOrder.DESC);
-//                break;
-//            case 3:
-//                sourceBuilder.sort("createTime",SortOrder.DESC);
-//                break;
-//            case 4:
-//                sourceBuilder.sort("sales",SortOrder.DESC);
-//                break;
-//            default:
-//                sourceBuilder.sort("_score", SortOrder.DESC);
-//                break;
-//        }
-//
-//        // 3. 构建分页条件
-//        Integer pageNum = searchParamVo.getPageNum();
-//        Integer pageSize = searchParamVo.getPageSize();
-//        sourceBuilder.from((pageNum - 1) * pageSize);
-//        sourceBuilder.size(pageSize);
-//
-//        // 4. 构建高亮
-//        sourceBuilder.highlighter(new HighlightBuilder()
-//                                    .field("title")
-//                                    .preTags("<font style='color:red;'>")
-//                                    .postTags("</font>"));
-//
-//        // 5. 构建聚合
-//        // 5.1. 品牌聚合
-//        sourceBuilder.aggregation(AggregationBuilders.terms("brandIdAgg").field("brandId")
-//                                    .subAggregation(AggregationBuilders.terms("brandNameAgg").field("brandName"))
-//                                    .subAggregation(AggregationBuilders.terms("logoAgg").field("logo"))
-//        );
-//
-//        // 5.2. 分类聚合
-//        sourceBuilder.aggregation(AggregationBuilders.terms("categoryIdAgg").field("categoryId")
-//                                    .subAggregation(AggregationBuilders.terms("categoryNameAgg").field("categoryName"))
-//        );
-//
-//        // 5.3. 规格参数的嵌套聚合
-//        sourceBuilder.aggregation(AggregationBuilders.nested("attrAgg", "searchAttrs")
-//                                    .subAggregation(AggregationBuilders.terms("attrIdAgg").field("searchAttrs.attrId"))
-//                                    .subAggregation(AggregationBuilders.terms("attrNameAgg").field("searchAttrs.attrName"))
-//                                    .subAggregation(AggregationBuilders.terms("attrValueAgg").field("searchAttrs.attrValue"))
-//        );
-//
-//        // 6. 结果集过滤
-//        sourceBuilder.fetchSource(new String[]{"skuId","title","subTitle","price","defaultImage"}, null);
-//
-//        System.out.println(sourceBuilder);
-//
-//        return sourceBuilder;
-//
-//    }
 }

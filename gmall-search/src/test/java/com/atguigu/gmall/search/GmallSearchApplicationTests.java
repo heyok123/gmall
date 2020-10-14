@@ -43,69 +43,6 @@ class GmallSearchApplicationTests {
         elasticsearchRestTemplate.putMapping(Goods.class);
     }
 
-   /* @Test
-    void importData(){
-        Integer pageNum = 1;
-        Integer pageSize = 100;
-
-        do {
-            // 分批查询spu
-            PageParamVo pageParamVo = new PageParamVo();
-            pageParamVo.setPageSize(pageSize);
-            pageParamVo.setPageNum(pageNum);
-            ResponseVo<List<SpuEntity>> listResponseVo = this.pmsFeignClient.querSpuByCidPage(pageParamVo);
-            List<SpuEntity> spuEntities = listResponseVo.getData();
-
-            if (CollectionUtils.isEmpty(spuEntities)) {
-                continue;
-            }
-
-            // 遍历spu -》 sku -》 goods
-            spuEntities.forEach(spuEntity -> {
-                ResponseVo<List<SkuEntity>> skuEntityResponseVo = this.pmsFeignClient.querySkuBySpuId(spuEntity.getId());
-                List<SkuEntity> skuEntities = skuEntityResponseVo.getData();
-
-                if (!CollectionUtils.isEmpty(skuEntities)) {
-                    // sku -> goods
-                    skuEntities.stream().map(skuEntity -> {
-                        Goods goods = new Goods();
-                        // sku商品列表所需字段
-                        goods.setSkuId(skuEntity.getId());
-                        goods.setTitle(skuEntity.getTitle());
-                        goods.setSubTitle(skuEntity.getSubtitle());
-                        goods.setDefaultImage(skuEntity.getDefaultImage());
-                        goods.setPrice(skuEntity.getPrice().doubleValue());
-
-                        // 品牌聚合所需字段
-                        ResponseVo<BrandEntity> brandEntityResponseVo = this.pmsFeignClient.queryBrandById(skuEntity.getBrandId());
-                        BrandEntity brandEntity = brandEntityResponseVo.getData();
-                        if (brandEntity != null){
-                            goods.setBrandId(brandEntity.getId());
-                            goods.setBrandName(brandEntity.getName());
-                            goods.setLogo(brandEntity.getLogo());
-                        }
-
-                        // 分类聚合所需字段
-                        ResponseVo<CategoryEntity> categoryEntityResponseVo = this.pmsFeignClient.queryCategoryById(skuEntity.getCatagoryId());
-
-
-
-                        return null;
-                    }).collect(Collectors.toList());
-
-                }
-
-            });
-
-
-            pageNum++;
-
-
-        }while (pageSize == 100);
-
-
-    }
-*/
     @Test
     void contextData(){
 
@@ -142,7 +79,7 @@ class GmallSearchApplicationTests {
                         goods.setPrice(skuEntity.getPrice().doubleValue());
 
                         // 品牌相关信息
-                        ResponseVo<BrandEntity> brandEntityResponseVo = this.pmsFeignClient.queryBrandById(spuEntity.getBrandId());
+                        ResponseVo<BrandEntity> brandEntityResponseVo = this.pmsFeignClient.queryBrandById(skuEntity.getBrandId());
                         BrandEntity brandEntity = brandEntityResponseVo.getData();
                         if (brandEntity != null) {
                             goods.setBrandId(brandEntity.getId());
@@ -151,7 +88,7 @@ class GmallSearchApplicationTests {
                         }
 
                         // 分类相关信息
-                        ResponseVo<CategoryEntity> categoryEntityResponseVo = this.pmsFeignClient.queryCategoryById(spuEntity.getCategoryId());
+                        ResponseVo<CategoryEntity> categoryEntityResponseVo = this.pmsFeignClient.queryCategoryById(skuEntity.getCatagoryId());
                         CategoryEntity categoryEntity = categoryEntityResponseVo.getData();
                         if (categoryEntity != null) {
                             goods.setCategoryId(categoryEntity.getId());

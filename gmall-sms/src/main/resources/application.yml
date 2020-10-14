@@ -30,6 +30,11 @@ spring:
 feign:
   sentinel:
     enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 20000
+        readTimeout: 20000
 mybatis-plus:
   mapper-locations: classpath:mapper/sms/*.xml
   type-aliases-package: com.atguigu.gmall.sms.entity

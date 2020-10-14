@@ -23,7 +23,7 @@ spring:
     username: root
     password: root
   redis:
-    host: 192.168.140.222
+    host: 192.168.140.223
 feign:
   sentinel:
     enabled: true
