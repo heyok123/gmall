@@ -3,6 +3,7 @@ package com.atguigu.gmall.oms.controller;
 import java.util.List;
 
 import com.atguigu.gmall.oms.vo.OrderSubmitVO;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,18 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    /**
+     * 根据订单编号查询订单
+     */
+    @GetMapping("token/{orderSn}")
+    public ResponseVo<OrderEntity> queryOrderByOrderSn(@PathVariable("orderSn") String orderSn){
+
+        OrderEntity orderEntity = this.orderService.getOne(new QueryWrapper<OrderEntity>().eq("order_sn", orderSn));
+
+        return ResponseVo.ok(orderEntity);
+
+    }
 
     /**
      * 创建订单接口

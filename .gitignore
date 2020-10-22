@@ -2,6 +2,7 @@
 target/
 .mvn/
 mvnw*
+.gitignore
 # Compiled class file
 *.class
 

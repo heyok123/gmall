@@ -12,6 +12,7 @@ import com.atguigu.gmall.oms.vo.OrderSubmitVO;
 import com.atguigu.gmall.pms.entity.*;
 import com.atguigu.gmall.ums.entity.UserAddressEntity;
 import com.atguigu.gmall.ums.entity.UserEntity;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ import com.atguigu.gmall.common.bean.PageParamVo;
 import com.atguigu.gmall.oms.mapper.OrderMapper;
 import com.atguigu.gmall.oms.entity.OrderEntity;
 import com.atguigu.gmall.oms.service.OrderService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 
@@ -41,6 +43,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderEntity> impl
     private GmallPmsClient pmsClient;
     @Autowired
     private GmallUmsClient umsClient;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public PageResultVo queryPage(PageParamVo paramVo) {
@@ -52,6 +56,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderEntity> impl
         return new PageResultVo(page);
     }
 
+    @Transactional
     @Override
     public OrderEntity saveOrder(OrderSubmitVO orderSubmitVO, Long userId) {
 
@@ -144,9 +149,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderEntity> impl
                         return orderItemEntity;
                     }).collect(Collectors.toList())
             );
-
-
         }
+
+        // 订单创建后 发送延时消息给消息队列mq --- 定时关单
+        this.rabbitTemplate.convertAndSend("ORDER_EXCHANGE", "order.ttl", orderSubmitVO.getOrderToken());
 
 
         return orderEntity;
